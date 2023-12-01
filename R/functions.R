@@ -8,10 +8,10 @@ get_data <- function(file) {
     dplyr::distinct()
 }
 
-read_raster <- function(file) {
-  Result <- terra::wrap(terra::rast(file))
-  return(Result)
-}
+#read_raster <- function(file) {
+#  Result <- terra::wrap(terra::rast(file))
+#  return(Result)
+#}
 
 clean_species <- function(df){
   Clean_Species <- SDMWorkflows::Clean_Taxa(Taxons = df$videnskabeligt_navn)
@@ -36,28 +36,43 @@ get_plant_presences <- function(species){
 }
 
 
+Join_Presences <- function(List){
+  DT <- data.table::rbindlist(List, fill = T)
+  DT <-  DT[, .(scientificName, decimalLatitude, decimalLongitude, family, genus, species)]
+  return(DT)
+}
+
 summarise_presences <- function(df){
   Sum <- as.data.table(df)[, .N, keyby = .(family, genus, species)]
   return(Sum)
 }
 
-
-generate_tree <- function(DF){
-  Tree <- as.data.frame(DF) |>
-    dplyr::select(species, genus, family) |>
-    dplyr::distinct() |>
-    V.PhyloMaker::phylo.maker()
-  return(Tree)
+Minimum_presences <- function(DT, n = 1){
+  DT <- DT[N >= n]
+  return(DT)
 }
 
-make_buffer_rasterized <- function(DF, raster){
+Select_Prescences <- function(Presences, speciesList){
+  DT <- Presences[species %chin% speciesList]
+  return(DT)
+}
+
+#generate_tree <- function(DF){
+#  Tree <- as.data.frame(DF) |>
+#    dplyr::select(species, genus, family) |>
+#    dplyr::distinct() |>
+#    V.PhyloMaker::phylo.maker()
+#  return(Tree)
+#}
+
+#make_buffer_rasterized <- function(DF, raster){
 #  Rast <- terra::unwrap(raster)
-  Result <- DF |>
-    dplyr::select(decimalLatitude, decimalLongitude, family, genus, species) |>
-    terra::vect(geom = c( "decimalLongitude", "decimalLatitude"), crs = "+proj=longlat +datum=WGS84") |>
-    terra::project(terra::crs(Rast)) |>
-    terra::buffer(500) |>
-    terra::rasterize(Rast) |>
-    terra::as.data.frame(cells = T)
-  return(Result)
-}
+#  Result <- DF |>
+#    dplyr::select(decimalLatitude, decimalLongitude, family, genus, species) |>
+#    terra::vect(geom = c( "decimalLongitude", "decimalLatitude"), crs = "+proj=longlat +datum=WGS84") |>
+#    terra::project(terra::crs(Rast)) |>
+#    terra::buffer(500) |>
+#    terra::rasterize(Rast) |>
+#    terra::as.data.frame(cells = T)
+#  return(Result)
+#}
