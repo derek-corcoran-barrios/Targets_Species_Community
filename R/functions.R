@@ -8,10 +8,6 @@ get_data <- function(file) {
     dplyr::distinct()
 }
 
-#read_raster <- function(file) {
-#  Result <- terra::wrap(terra::rast(file))
-#  return(Result)
-#}
 
 clean_species <- function(df){
   Clean_Species <- SDMWorkflows::Clean_Taxa(Taxons = df$videnskabeligt_navn)
@@ -54,6 +50,9 @@ Minimum_presences <- function(DT, n = 1){
 
 Select_Prescences <- function(Presences, speciesList){
   DT <- Presences[species %chin% speciesList]
+  DT <- DT |>
+    as.data.frame() |>
+    dplyr::group_by(species)
   return(DT)
 }
 
@@ -65,14 +64,14 @@ Select_Prescences <- function(Presences, speciesList){
 #  return(Tree)
 #}
 
-#make_buffer_rasterized <- function(DF, raster){
-#  Rast <- terra::unwrap(raster)
-#  Result <- DF |>
-#    dplyr::select(decimalLatitude, decimalLongitude, family, genus, species) |>
-#    terra::vect(geom = c( "decimalLongitude", "decimalLatitude"), crs = "+proj=longlat +datum=WGS84") |>
-#    terra::project(terra::crs(Rast)) |>
-#    terra::buffer(500) |>
-#    terra::rasterize(Rast) |>
-#    terra::as.data.frame(cells = T)
-#  return(Result)
-#}
+make_buffer_rasterized <- function(DT, file){
+  Rast <- terra::rast(file)
+  Result <- as.data.frame(DT) |>
+    dplyr::select(decimalLatitude, decimalLongitude, family, genus, species) |>
+    terra::vect(geom = c( "decimalLongitude", "decimalLatitude"), crs = "+proj=longlat +datum=WGS84") |>
+    terra::project(terra::crs(Rast)) |>
+    terra::buffer(500) |>
+    terra::rasterize(Rast, field = "species") |>
+    terra::as.data.frame(cells = T)
+  return(Result)
+}
