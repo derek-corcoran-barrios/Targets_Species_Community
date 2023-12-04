@@ -64,20 +64,17 @@ Select_Prescences <- function(Presences, speciesList){
 #  return(Tree)
 #}
 
-make_buffer_rasterized <- function(DT){ #, file){
-  #Rast <- terra::rast(file)
+make_buffer_rasterized <- function(DT, file){
+  Rast <- terra::rast(file)
   Result <- DT |>
     dplyr::select(decimalLatitude, decimalLongitude, family, genus, species) |>
     dplyr::mutate(presence = 1)
 
-  colnames(Result)[ncol(Result)] <- unique(Result$species)
-
-  Result <- Result |> janitor::clean_names()
-
-  #  terra::vect(geom = c( "decimalLongitude", "decimalLatitude"), crs = "+proj=longlat +datum=WGS84") |>
-  #  terra::project(terra::crs(Rast)) |>
-  #  terra::buffer(500) |>
-  #  terra::rasterize(Rast, field = "species") |>
-  #  terra::as.data.frame(cells = T)
-  return(Result)
+  Temp <- Result |> terra::vect(geom = c( "decimalLongitude", "decimalLatitude"), crs = "+proj=longlat +datum=WGS84") |>
+    terra::project(terra::crs(Rast)) |>
+    terra::buffer(500) |>
+    terra::rasterize(Rast, field = "presence") |>
+    terra::as.data.frame(cells = T) |>
+    magrittr::set_colnames(c("cell", janitor::make_clean_names(unique(Result$species))))
+  return(Temp)
 }

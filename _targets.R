@@ -2,8 +2,10 @@
 library(targets)
 source("R/functions.R")
 library(crew)
+library(tarchetypes)
 
-tar_option_set(packages = c("dplyr", "readxl", "SDMWorkflows", "terra", "janitor", "purrr", "data.table", "V.PhyloMaker"),
+tar_option_set(packages = c("data.table", "dplyr", "janitor", "magrittr", "purrr", "readxl",
+                            "SDMWorkflows", "terra", "V.PhyloMaker"),
                controller = crew_controller_local(workers = 50),
                error = "null")
 list(
@@ -23,10 +25,9 @@ list(
   tar_target(Filtered_Species, Minimum_presences(Presence_summary, n = 5)),
   tarchetypes::tar_group_by(Presence_Filtered,
              Select_Prescences(Joint_Presences, Filtered_Species$species), species),
-  tar_target(buffer_500, make_buffer_rasterized(DT = Presence_Filtered),
+  tar_target(buffer_500, make_buffer_rasterized(DT = Presence_Filtered, file = LandUseTiff),
              pattern = map(Presence_Filtered),
              iteration = "group")
-  #                                                  file = LandUseTiff))
 
 )
 
