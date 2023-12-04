@@ -21,11 +21,12 @@ list(
   tar_target(Joint_Presences, Join_Presences(Presences)),
   tar_target(Presence_summary, summarise_presences(Joint_Presences)),
   tar_target(Filtered_Species, Minimum_presences(Presence_summary, n = 5)),
-  tar_target(Presence_Filtered, Select_Prescences(Joint_Presences, Filtered_Species$species)),#,
-            # iteration = "group"),
-  tar_target(buffer_500, make_buffer_rasterized(DT =Presence_Filtered,
-                                                file = LandUseTiff))#,
-             #pattern = map(Presence_Filtered),
-             #iteration = "vector")
+  tarchetypes::tar_group_by(Presence_Filtered,
+             Select_Prescences(Joint_Presences, Filtered_Species$species), species),
+  tar_target(buffer_500, make_buffer_rasterized(DT = Presence_Filtered),
+             pattern = map(Presence_Filtered),
+             iteration = "group")
+  #                                                  file = LandUseTiff))
+
 )
 
