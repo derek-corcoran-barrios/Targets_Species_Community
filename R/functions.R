@@ -94,6 +94,23 @@ SamplePresLanduse <- function(DF, file){
   return(Pres)
 }
 
+SampleBGLanduse <- function(DF, file){
+  Denmark_LU <- terra::rast(file)
+
+  Temp <- DF |>
+    dplyr::select(species, decimalLongitude, decimalLatitude) |>
+    terra::vect(geom=c("decimalLongitude", "decimalLatitude"), crs = "epsg:4326") |>
+    terra::project(terra::crs(Denmark_LU))
+
+  BG <- Denmark_LU |>
+    terra::crop(Convex_20(as.data.frame(Temp, geom = "xy"), lon = "x", lat = "y",
+                          proj = terra::crs(Denmark_LU))) |>
+    terra::spatSample(10000, na.rm = T) |>
+    dplyr::mutate(Landuse = as.character(SN_ModelClass), Pres = 0) |>
+    dplyr::filter(!is.na(Landuse))
+  return(BG)
+}
+
 DuplicateBoth <- function(DF){
   is_both <- stringr::str_detect(DF$Landuse, "Both")
   duplicated_rows1 <- DF[is_both, ]

@@ -34,6 +34,12 @@ list(
              iteration = "group"),
   tar_target(Fixed_LU_Pres, DuplicateBoth(DF =  Species_LU_Pres),
              pattern = map(Species_LU_Pres),
+             iteration = "group"),
+  tar_target(Species_LU_BG, SampleBGLanduse(DF =  Presence_Filtered, file = LandUseTiff),
+             pattern = map(Presence_Filtered),
+             iteration = "group"),
+  tar_target(Fixed_LU_BG, DuplicateBoth(DF =  Species_LU_BG),
+             pattern = map(Species_LU_BG),
              iteration = "group")
 
 )
