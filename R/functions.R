@@ -78,3 +78,30 @@ make_buffer_rasterized <- function(DT, file){
     magrittr::set_colnames(c("cell", janitor::make_clean_names(unique(Result$species))))
   return(Temp)
 }
+
+SamplePresLanduse <- function(DF, file){
+  Denmark_LU <- terra::rast(file)
+
+  Temp <- DF |>
+    dplyr::select(species, decimalLongitude, decimalLatitude) |>
+    dplyr::mutate(Presence = 1) |>
+    terra::vect(geom=c("decimalLongitude", "decimalLatitude"), crs = "epsg:4326") |>
+    terra::project(terra::crs(Denmark_LU))
+
+  Pres <- terra::extract(Denmark_LU, Temp) |>
+    dplyr::mutate(Landuse = as.character(SN_ModelClass), Pres = 1) |>
+    dplyr::filter(!is.na(Landuse))
+  return(Pres)
+}
+
+DuplicateBoth <- function(DF){
+  is_both <- stringr::str_detect(DF$Landuse, "Both")
+  duplicated_rows1 <- DF[is_both, ]
+  duplicated_rows2 <- DF[is_both, ]
+  duplicated_rows1$Landuse <- stringr::str_replace_all(duplicated_rows1$Landuse, "Both", "Poor")
+  duplicated_rows2$Landuse <- stringr::str_replace_all(duplicated_rows2$Landuse, "Both", "Rich")
+  duplicated_rows <- bind_rows(duplicated_rows1, duplicated_rows2)
+  DF <- DF[!is_both,] |>
+    bind_rows(duplicated_rows)
+  return(DF)
+}

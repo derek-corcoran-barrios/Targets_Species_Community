@@ -4,7 +4,7 @@ source("R/functions.R")
 library(crew)
 library(tarchetypes)
 
-tar_option_set(packages = c("data.table", "dplyr", "janitor", "magrittr", "purrr", "readxl",
+tar_option_set(packages = c("data.table", "dplyr", "ENMeval","janitor", "magrittr", "maxnet", "purrr", "readxl",
                             "SDMWorkflows", "terra", "V.PhyloMaker"),
                controller = crew_controller_local(workers = 50),
                error = "null")
@@ -28,6 +28,13 @@ list(
   tar_target(buffer_500, make_buffer_rasterized(DT = Presence_Filtered, file = LandUseTiff),
              pattern = map(Presence_Filtered),
              iteration = "group"),
-  tar_target(Phylo_Tree, generate_tree(Filtered_Species))
+  tar_target(Phylo_Tree, generate_tree(Filtered_Species)),
+  tar_target(Species_LU_Pres, SamplePresLanduse(DF =  Presence_Filtered, file = LandUseTiff),
+             pattern = map(Presence_Filtered),
+             iteration = "group"),
+  tar_target(Fixed_LU_Pres, DuplicateBoth(DF =  Species_LU_Pres),
+             pattern = map(Species_LU_Pres),
+             iteration = "group")
+
 )
 
