@@ -56,13 +56,13 @@ Select_Prescences <- function(Presences, speciesList){
   return(DT)
 }
 
-#generate_tree <- function(DF){
-#  Tree <- as.data.frame(DF) |>
-#    dplyr::select(species, genus, family) |>
-#    dplyr::distinct() |>
-#    V.PhyloMaker::phylo.maker()
-#  return(Tree)
-#}
+generate_tree <- function(DF){
+  Tree <- as.data.frame(DF) |>
+    dplyr::select(species, genus, family) |>
+    dplyr::distinct() |>
+    V.PhyloMaker::phylo.maker()
+  return(Tree)
+}
 
 make_buffer_rasterized <- function(DT, file){
   Rast <- terra::rast(file)

@@ -27,7 +27,7 @@ list(
              Select_Prescences(Joint_Presences, Filtered_Species$species), species),
   tar_target(buffer_500, make_buffer_rasterized(DT = Presence_Filtered, file = LandUseTiff),
              pattern = map(Presence_Filtered),
-             iteration = "group")
-
+             iteration = "group"),
+  tar_target(Phylo_Tree, generate_tree(Filtered_Species))
 )
 
