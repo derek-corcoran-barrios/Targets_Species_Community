@@ -5,7 +5,7 @@ library(crew)
 library(tarchetypes)
 
 tar_option_set(packages = c("data.table", "dplyr", "ENMeval","janitor", "magrittr", "maxnet", "purrr", "readxl",
-                            "SDMWorkflows", "terra", "V.PhyloMaker"),
+                            "SDMWorkflows", "tidyr", "terra", "V.PhyloMaker"),
                controller = crew_controller_local(workers = 50),
                error = "null")
 list(

@@ -137,8 +137,14 @@ ModelSpecies <- function(DF){
   Preds <- Landuse_matrix |> as.data.frame() |> distinct()
   Preds$Pred <- predict(Mod, Preds, type = "cloglog") |>
     as.vector()
-  #Preds <-  Preds |> pivot_longer(-Pred, names_to = "Landuse", values_to = "Pres") |> dplyr::filter(Pres == 1) |> mutate(Landuse = stringr::str_remove_all(Landuse, "Landuse")) |> arrange(desc(Pred)) |> dplyr::select(-Pres) |>
-  #  mutate(Species = All$species[1])
+  Preds <-  Preds |>
+    tidyr::pivot_longer(-Pred, names_to = "Landuse", values_to = "Pres") |>
+    dplyr::filter(Pres == 1) |>
+    mutate(Landuse = stringr::str_remove_all(Landuse, "Landuse")) |>
+    arrange(desc(Pred)) |>
+    dplyr::select(-Pres)
+
+  #Preds$Species = unique(All$species)
 
   #Preds$Thres_99[i] <- Pres |> left_join(Preds) |> slice_max(order_by = Pred,prop = 0.99, with_ties = F) |> pull(Pred) |> min()
   #Preds$Thres_95[i] <- Pres |> left_join(Preds) |> slice_max(order_by = Pred,prop = 0.95, with_ties = F) |> pull(Pred) |> min()
