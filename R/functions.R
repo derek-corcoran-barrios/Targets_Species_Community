@@ -75,7 +75,7 @@ make_buffer_rasterized <- function(DT, file){
     terra::buffer(500) |>
     terra::rasterize(Rast, field = "presence") |>
     terra::as.data.frame(cells = T) |>
-    magrittr::set_colnames(c("cell", janitor::make_clean_names(unique(Result$species))))
+    magrittr::set_colnames(c("cell", stringr::str_replace_all(unique(Result$species), " ", "_")))
   return(Temp)
 }
 
@@ -180,10 +180,29 @@ create_thresholds <- function(Model, reference){
 }
 
 Generate_Lookup <- function(Model, Thresholds) {
-
   joined_data <- merge(as.data.table(Model), as.data.table(Thresholds), by = c("species"), all = TRUE)
   joined_data[, Pres := ifelse(Pred >= Thres_95, 1, 0)]
+  joined_data <- joined_data[Pres > 0]  # Assign the filtered result to joined_data
+  joined_data[, .(species, Landuse, Pres)]  # Return the selected columns
+}
 
-  wide_data <- dcast(joined_data, species + Thres_95 ~ Landuse, value.var = "Pres")
-  return(wide_data)
+
+generate_landuse_table <- function(path){
+  Names <- path |>
+    stringr::str_remove_all("O:/Nat_Sustain-proj/_user/HanneNicolaisen_au704629/Data/Habitat_Ref_Map/RF_predict_binary_") |>
+    stringr::str_remove_all("_thresh_5.tif")
+  DF <- terra::rast(path) |>
+    terra::as.data.frame(cells = T) |>
+    dplyr::filter(layer == 1)
+  colnames(DF)[2] <- Names
+  return(DF)
+}
+
+
+Make_Long_LU_table <- function(DF){
+  DF <-  as.data.table(DF) |> melt(id.vars       = "cell",
+                                   measure.vars  = c("DryPoor", "DryRich", "WetPoor", "WetRich"),
+                                   variable.name = "Habitat",
+                                   value.name    = "Suitability", na.rm = T)
+  return(DF)
 }

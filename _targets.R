@@ -5,10 +5,15 @@ library(crew)
 library(tarchetypes)
 
 tar_option_set(packages = c("data.table", "dplyr", "ENMeval","janitor", "magrittr", "maxnet", "purrr", "readxl",
-                            "SDMWorkflows", "tidyr", "terra", "V.PhyloMaker"),
+                            "SDMWorkflows", "stringr", "tidyr", "terra", "V.PhyloMaker"),
                controller = crew_controller_local(workers = 50),
                error = "null")
 list(
+  tar_files(LanduseSuitability, c("O:/Nat_Sustain-proj/_user/HanneNicolaisen_au704629/Data/Habitat_Ref_Map/RF_predict_binary_DryPoor_thresh_5.tif",
+                                 "O:/Nat_Sustain-proj/_user/HanneNicolaisen_au704629/Data/Habitat_Ref_Map/RF_predict_binary_DryRich_thresh_5.tif",
+                                 "O:/Nat_Sustain-proj/_user/HanneNicolaisen_au704629/Data/Habitat_Ref_Map/RF_predict_binary_WetPoor_thresh_5.tif",
+                                 "O:/Nat_Sustain-proj/_user/HanneNicolaisen_au704629/Data/Habitat_Ref_Map/RF_predict_binary_WetRich_thresh_5.tif"
+  )),
   tar_target(LandUseTiff,
              "O:/Nat_Sustain-proj/_user/HanneNicolaisen_au704629/Data/Land_cover_maps/Basemap/basemap_reclass_SN_ModelClass.tif",
              format = "file"),
@@ -51,6 +56,9 @@ list(
   tar_target(Thresholds, create_thresholds(Model = ModelAndPredict,reference = Spp_LU_Both),
              pattern = map(ModelAndPredict, Spp_LU_Both),
              iteration = "group"),
-  tar_target(LookUpTable, Generate_Lookup(Model = ModelAndPredict, Thresholds = Thresholds))
+  tar_target(LookUpTable, Generate_Lookup(Model = ModelAndPredict, Thresholds = Thresholds)),
+  tar_target(LanduseTable, generate_landuse_table(path = LanduseSuitability),
+             pattern = map(LanduseSuitability)),
+  tar_target(Long_LU_table, Make_Long_LU_table(DF = LanduseTable))
 )
 
