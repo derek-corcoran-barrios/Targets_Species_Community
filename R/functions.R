@@ -91,6 +91,8 @@ SamplePresLanduse <- function(DF, file){
   Pres <- terra::extract(Denmark_LU, Temp) |>
     dplyr::mutate(Landuse = as.character(SN_ModelClass), Pres = 1) |>
     dplyr::filter(!is.na(Landuse))
+
+  Pres$species <- unique(Temp$species)
   return(Pres)
 }
 
@@ -108,6 +110,7 @@ SampleBGLanduse <- function(DF, file){
     terra::spatSample(10000, na.rm = T) |>
     dplyr::mutate(Landuse = as.character(SN_ModelClass), Pres = 0) |>
     dplyr::filter(!is.na(Landuse))
+  BG$species <- unique(Temp$species)
   return(BG)
 }
 
@@ -121,4 +124,24 @@ DuplicateBoth <- function(DF){
   DF <- DF[!is_both,] |>
     bind_rows(duplicated_rows)
   return(DF)
+}
+
+ModelSpecies <- function(DF){
+  All <- DF |> dplyr::mutate(Landuse = as.factor(Landuse))
+  Data <- dplyr::select(All, Landuse)
+  # Factor is made into dummy vars
+  Landuse_matrix <- model.matrix(~ Landuse - 1, data = Data)
+  # mcodel species
+  Mod <- maxnet::maxnet(p = All$Pres, data = as.data.frame(Landuse_matrix))
+  # Make prediction over the landuse option
+  Preds <- Landuse_matrix |> as.data.frame() |> distinct()
+  Preds$Pred <- predict(Mod, Preds, type = "cloglog") |>
+    as.vector()
+  #Preds <-  Preds |> pivot_longer(-Pred, names_to = "Landuse", values_to = "Pres") |> dplyr::filter(Pres == 1) |> mutate(Landuse = stringr::str_remove_all(Landuse, "Landuse")) |> arrange(desc(Pred)) |> dplyr::select(-Pres) |>
+  #  mutate(Species = All$species[1])
+
+  #Preds$Thres_99[i] <- Pres |> left_join(Preds) |> slice_max(order_by = Pred,prop = 0.99, with_ties = F) |> pull(Pred) |> min()
+  #Preds$Thres_95[i] <- Pres |> left_join(Preds) |> slice_max(order_by = Pred,prop = 0.95, with_ties = F) |> pull(Pred) |> min()
+  #Preds$Thres_90[i] <- Pres |> left_join(Preds) |> slice_max(order_by = Pred,prop = 0.90, with_ties = F) |> pull(Pred) |> min()
+  return(Preds)
 }

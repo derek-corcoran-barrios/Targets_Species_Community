@@ -40,7 +40,13 @@ list(
              iteration = "group"),
   tar_target(Fixed_LU_BG, DuplicateBoth(DF =  Species_LU_BG),
              pattern = map(Species_LU_BG),
+             iteration = "group"),
+  # Make a new target joining Fixed_LU_Pres and Fixed_LU_BG
+  tar_target(Spp_LU_Both, bind_rows(Fixed_LU_Pres, Fixed_LU_BG,),
+             pattern = map(Fixed_LU_Pres),
+             iteration = "group"),
+  tar_target(ModelAndPredict, ModelSpecies(Spp_LU_Both),
+             pattern = map(Spp_LU_Both),
              iteration = "group")
-
 )
 
