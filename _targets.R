@@ -42,11 +42,14 @@ list(
              pattern = map(Species_LU_BG),
              iteration = "group"),
   # Make a new target joining Fixed_LU_Pres and Fixed_LU_BG
-  tar_target(Spp_LU_Both, bind_rows(Fixed_LU_Pres, Fixed_LU_BG,),
-             pattern = map(Fixed_LU_Pres),
+  tar_target(Spp_LU_Both, bind_rows(Fixed_LU_Pres, Fixed_LU_BG),
+             pattern = map(Fixed_LU_Pres, Fixed_LU_BG),
              iteration = "group"),
   tar_target(ModelAndPredict, ModelSpecies(Spp_LU_Both),
              pattern = map(Spp_LU_Both),
+             iteration = "group"),
+  tar_target(Thresholds, create_thresholds(Model = ModelAndPredict,reference = Spp_LU_Both),
+             pattern = map(ModelAndPredict, Spp_LU_Both),
              iteration = "group")
 )
 

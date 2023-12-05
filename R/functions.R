@@ -144,10 +144,37 @@ ModelSpecies <- function(DF){
     arrange(desc(Pred)) |>
     dplyr::select(-Pres)
 
-  #Preds$Species = unique(All$species)
+  Preds$species <- unique(All$species)
 
   #Preds$Thres_99[i] <- Pres |> left_join(Preds) |> slice_max(order_by = Pred,prop = 0.99, with_ties = F) |> pull(Pred) |> min()
   #Preds$Thres_95[i] <- Pres |> left_join(Preds) |> slice_max(order_by = Pred,prop = 0.95, with_ties = F) |> pull(Pred) |> min()
   #Preds$Thres_90[i] <- Pres |> left_join(Preds) |> slice_max(order_by = Pred,prop = 0.90, with_ties = F) |> pull(Pred) |> min()
   return(Preds)
+}
+
+
+create_thresholds <- function(Model, reference){
+  Thres <- data.frame(species = unique(Model$species),Thres_99 = NA, Thres_95 = NA, Thres_90 = NA)
+  Thres$Thres_99 <- reference |>
+    dplyr::left_join(Model) |>
+    dplyr::filter(Pres == 1) |>
+    slice_max(order_by = Pred,prop = 0.99, with_ties = F) |>
+    pull(Pred) |>
+    min()
+
+  Thres$Thres_95 <- reference |>
+    dplyr::left_join(Model) |>
+    dplyr::filter(Pres == 1) |>
+    slice_max(order_by = Pred,prop = 0.95, with_ties = F) |>
+    pull(Pred) |>
+    min()
+
+  Thres$Thres_90 <- reference |>
+    dplyr::left_join(Model) |>
+    dplyr::filter(Pres == 1) |>
+    slice_max(order_by = Pred,prop = 0.90, with_ties = F) |>
+    pull(Pred) |>
+    min()
+
+  return(Thres)
 }
