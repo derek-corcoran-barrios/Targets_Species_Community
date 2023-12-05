@@ -17,3 +17,8 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 The goal of Targets_Species_Community is to recreate the community generated but using the targets r package
+
+
+```{r, echo = FALSE, results = 'asis', message = FALSE}
+cat(c("```{mermaid}", targets::tar_mermaid(targets_only = TRUE), "```"), sep = "\n")
+```

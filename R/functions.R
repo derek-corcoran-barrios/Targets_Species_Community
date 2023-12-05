@@ -178,3 +178,12 @@ create_thresholds <- function(Model, reference){
 
   return(Thres)
 }
+
+Generate_Lookup <- function(Model, Thresholds) {
+
+  joined_data <- merge(as.data.table(Model), as.data.table(Thresholds), by = c("species"), all = TRUE)
+  joined_data[, Pres := ifelse(Pred >= Thres_95, 1, 0)]
+
+  wide_data <- dcast(joined_data, species + Thres_95 ~ Landuse, value.var = "Pres")
+  return(wide_data)
+}

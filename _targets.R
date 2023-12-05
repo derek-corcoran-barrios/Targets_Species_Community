@@ -50,6 +50,7 @@ list(
              iteration = "group"),
   tar_target(Thresholds, create_thresholds(Model = ModelAndPredict,reference = Spp_LU_Both),
              pattern = map(ModelAndPredict, Spp_LU_Both),
-             iteration = "group")
+             iteration = "group"),
+  tar_target(LookUpTable, Generate_Lookup(Model = ModelAndPredict, Thresholds = Thresholds))
 )
 
