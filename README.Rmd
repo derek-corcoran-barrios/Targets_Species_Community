@@ -9,6 +9,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+library(targets)
+library(DiagrammeR)
 ```
 
 # Targets_Species_Community
@@ -19,6 +21,6 @@ knitr::opts_chunk$set(
 The goal of Targets_Species_Community is to recreate the community generated but using the targets r package
 
 
-```{r, echo = FALSE, results = 'asis', message = FALSE}
-cat(c("```{mermaid}", targets::tar_mermaid(targets_only = TRUE), "```"), sep = "\n")
+```{r, echo = FALSE}
+DiagrammeR::mermaid(targets::tar_mermaid())
 ```

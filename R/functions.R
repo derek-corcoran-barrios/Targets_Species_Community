@@ -18,7 +18,7 @@ filter_plants <- function(df){
     dplyr::filter(kingdom == "Plantae") |>
     dplyr::pull(species) |>
     unique() |>
-    head(10)
+    head(20)
   return(result)
 }
 
@@ -146,9 +146,6 @@ ModelSpecies <- function(DF){
 
   Preds$species <- unique(All$species)
 
-  #Preds$Thres_99[i] <- Pres |> left_join(Preds) |> slice_max(order_by = Pred,prop = 0.99, with_ties = F) |> pull(Pred) |> min()
-  #Preds$Thres_95[i] <- Pres |> left_join(Preds) |> slice_max(order_by = Pred,prop = 0.95, with_ties = F) |> pull(Pred) |> min()
-  #Preds$Thres_90[i] <- Pres |> left_join(Preds) |> slice_max(order_by = Pred,prop = 0.90, with_ties = F) |> pull(Pred) |> min()
   return(Preds)
 }
 
