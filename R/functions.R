@@ -262,3 +262,8 @@ make_final_presences <- function(Long_LU_table, Long_Buffer, LookUpTable) {
   # Return the final result
   return(result2)
 }
+
+GetRichness <- function(df){
+  Sum <- df[, .N, keyby = .(cell, Landuse)]
+  return(Sum)
+}

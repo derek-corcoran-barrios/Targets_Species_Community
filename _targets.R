@@ -65,6 +65,7 @@ list(
   tar_target(Long_LU_table, Make_Long_LU_table(DF = LanduseTable)),
   tar_target(Final_Presences, make_final_presences(Long_LU_table, Long_Buffer, LookUpTable),
              pattern = map(Long_Buffer),
-             iteration = "group")
+             iteration = "group"),
+  tar_target(Richness, GetRichness(Final_Presences))
 )
 
