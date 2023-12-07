@@ -18,7 +18,7 @@ filter_plants <- function(df){
     dplyr::filter(kingdom == "Plantae") |>
     dplyr::pull(species) |>
     unique() |>
-    head(20)
+    head(100)
   return(result)
 }
 
