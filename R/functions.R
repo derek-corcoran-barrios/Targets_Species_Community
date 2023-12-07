@@ -234,3 +234,31 @@ Make_Long_LU_table <- function(DF){
   DF <- DF[, Suitability := NULL]
   return(DF)
 }
+
+make_final_presences <- function(Long_LU_table, Long_Buffer, LookUpTable) {
+
+  # Modify Long_LU_table
+  Long_LU_table[, Habitat := as.character(Habitat)]
+
+  # Check feasible habitats for the particular species
+  Feasible_Landuses <- LookUpTable[species %in% unique(Long_Buffer$species)]
+
+  # Transform Landuse into habitat and remove the prefix
+  Feasible_Landuses[, Habitat := stringr::str_remove_all(Landuse, "Forest")]
+  Feasible_Landuses[, Habitat := stringr::str_remove_all(Habitat, "Open")]
+  Feasible_Landuses[, Pres := NULL]
+
+  # Get only the cells that can become the feasible Landuses
+  Available_Cells <- Long_LU_table[Habitat %chin% unique(Feasible_Landuses$Habitat)]
+
+  # Check which of the available cells for the species can be in a habitat suitable for the species
+  FeasibleCells <- Long_Buffer[cell %chin% unique(Available_Cells$cell)]
+
+  # Join all three data.tables
+  result <- FeasibleCells[Available_Cells, on = "cell", nomatch = 0]
+  result2 <- result[Feasible_Landuses, on = .(Habitat, species), nomatch = 0, allow.cartesian = TRUE]
+  result2[, Habitat := NULL]
+
+  # Return the final result
+  return(result2)
+}

@@ -62,6 +62,9 @@ list(
   tar_target(LookUpTable, Generate_Lookup(Model = ModelAndPredict, Thresholds = Thresholds)),
   tar_target(LanduseTable, generate_landuse_table(path = LanduseSuitability),
              pattern = map(LanduseSuitability)),
-  tar_target(Long_LU_table, Make_Long_LU_table(DF = LanduseTable))
+  tar_target(Long_LU_table, Make_Long_LU_table(DF = LanduseTable)),
+  tar_target(Final_Presences, make_final_presences(Long_LU_table, Long_Buffer, LookUpTable),
+             pattern = map(Long_Buffer),
+             iteration = "group")
 )
 
