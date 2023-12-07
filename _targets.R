@@ -15,7 +15,7 @@ list(
                                  "O:/Nat_Sustain-proj/_user/HanneNicolaisen_au704629/Data/Habitat_Ref_Map/RF_predict_binary_WetRich_thresh_5.tif"
   )),
   tar_target(LandUseTiff,
-             "O:/Nat_Sustain-proj/_user/HanneNicolaisen_au704629/Data/Land_cover_maps/Basemap/basemap_reclass_SN_ModelClass.tif",
+             "Dir/LU.tif",
              format = "file"),
   tar_target(file, "2022-09-21.xlsx", format = "file"),
   tar_target(data, get_data(file)),
@@ -32,6 +32,9 @@ list(
              Select_Prescences(Joint_Presences, Filtered_Species$species), species),
   tar_target(buffer_500, make_buffer_rasterized(DT = Presence_Filtered, file = LandUseTiff),
              pattern = map(Presence_Filtered),
+             iteration = "group"),
+  tar_target(Long_Buffer, make_long_buffer(DT = buffer_500),
+             pattern = map(buffer_500),
              iteration = "group"),
   tar_target(Phylo_Tree, generate_tree(Filtered_Species)),
   tar_target(Species_LU_Pres, SamplePresLanduse(DF =  Presence_Filtered, file = LandUseTiff),

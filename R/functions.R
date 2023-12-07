@@ -79,6 +79,17 @@ make_buffer_rasterized <- function(DT, file){
   return(Temp)
 }
 
+
+make_long_buffer <- function(DT){
+  DT <- as.data.table(DT)
+  Species <- stringr::str_replace_all(colnames(DT)[2], "_", " ")
+  DT[, .(cell, species = Species)]
+}
+
+Join_long_buffer <- function(List){
+  DT <- data.table::rbindlist(List, fill = T)
+}
+
 SamplePresLanduse <- function(DF, file){
   Denmark_LU <- terra::rast(file)
 
@@ -131,23 +142,42 @@ ModelSpecies <- function(DF){
   Data <- dplyr::select(All, Landuse)
   # Factor is made into dummy vars
   Landuse_matrix <- model.matrix(~ Landuse - 1, data = Data)
-  # mcodel species
-  Mod <- maxnet::maxnet(p = All$Pres, data = as.data.frame(Landuse_matrix))
-  # Make prediction over the landuse option
-  Preds <- Landuse_matrix |> as.data.frame() |> distinct()
-  Preds$Pred <- predict(Mod, Preds, type = "cloglog") |>
-    as.vector()
-  Preds <-  Preds |>
-    tidyr::pivot_longer(-Pred, names_to = "Landuse", values_to = "Pres") |>
-    dplyr::filter(Pres == 1) |>
-    mutate(Landuse = stringr::str_remove_all(Landuse, "Landuse")) |>
-    arrange(desc(Pred)) |>
-    dplyr::select(-Pres)
+
+  # Use tryCatch for model fitting
+  Mod <- tryCatch(
+    maxnet::maxnet(p = All$Pres, data = as.data.frame(Landuse_matrix)),
+    error = function(e) {
+      cat("Error in model fitting:", conditionMessage(e), "\n")
+      return(NULL)  # Return NULL if model fitting fails
+    }
+  )
+
+  if (is.null(Mod)) {
+    # Model fitting failed, set Preds$Pred to a column of 0s
+    Preds <- data.frame(Landuse = unique(as.factor(All$Landuse)), Pred = 0, species = unique(All$species))
+  } else {
+    # Model fitting succeeded, proceed with prediction
+    Preds <- Landuse_matrix |> as.data.frame() |> distinct()
+    Preds$Pred <- tryCatch(
+      predict(Mod, Preds, type = "cloglog") |> as.vector(),
+      error = function(e) {
+        cat("Error in prediction:", conditionMessage(e), "\n")
+        return(rep(0, nrow(Preds)))  # Return a column of 0s if prediction fails
+      }
+    )
+    Preds <- Preds |>
+      tidyr::pivot_longer(-Pred, names_to = "Landuse", values_to = "Pres") |>
+      dplyr::filter(Pres == 1) |>
+      mutate(Landuse = stringr::str_remove_all(Landuse, "Landuse")) |>
+      arrange(desc(Pred)) |>
+      dplyr::select(-Pres)
+  }
 
   Preds$species <- unique(All$species)
 
   return(Preds)
 }
+
 
 
 create_thresholds <- function(Model, reference){
@@ -178,7 +208,7 @@ create_thresholds <- function(Model, reference){
 
 Generate_Lookup <- function(Model, Thresholds) {
   joined_data <- merge(as.data.table(Model), as.data.table(Thresholds), by = c("species"), all = TRUE)
-  joined_data[, Pres := ifelse(Pred >= Thres_95, 1, 0)]
+  joined_data[, Pres := ifelse(Pred > Thres_95, 1, 0)]
   joined_data <- joined_data[Pres > 0]  # Assign the filtered result to joined_data
   joined_data[, .(species, Landuse, Pres)]  # Return the selected columns
 }
@@ -201,5 +231,6 @@ Make_Long_LU_table <- function(DF){
                                    measure.vars  = c("DryPoor", "DryRich", "WetPoor", "WetRich"),
                                    variable.name = "Habitat",
                                    value.name    = "Suitability", na.rm = T)
+  DF <- DF[, Suitability := NULL]
   return(DF)
 }

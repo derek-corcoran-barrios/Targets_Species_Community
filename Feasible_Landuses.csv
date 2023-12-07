@@ -1,0 +1,8 @@
+species,Landuse,Habitat
+Abies nordmanniana,ForestDryRich,DryRich
+Abies nordmanniana,ForestDryPoor,DryPoor
+Abies nordmanniana,ForestWetRich,WetRich
+Abies nordmanniana,ForestWetPoor,WetPoor
+Abies nordmanniana,OpenDryRich,DryRich
+Abies nordmanniana,OpenDryPoor,DryPoor
+Abies nordmanniana,OpenWetPoor,WetPoor
