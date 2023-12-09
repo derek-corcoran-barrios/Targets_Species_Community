@@ -141,7 +141,10 @@ ModelSpecies <- function(DF){
   All <- DF |> dplyr::mutate(Landuse = as.factor(Landuse))
   Data <- dplyr::select(All, Landuse)
   # Factor is made into dummy vars
-  Landuse_matrix <- model.matrix(~ Landuse - 1, data = Data)
+  if(length(table(Data$Landuse)) > 1){
+    Landuse_matrix <- model.matrix(~ Landuse - 1, data = Data)
+  }
+
 
   # Use tryCatch for model fitting
   Mod <- tryCatch(
@@ -216,7 +219,7 @@ Generate_Lookup <- function(Model, Thresholds) {
 
 generate_landuse_table <- function(path){
   Names <- path |>
-    stringr::str_remove_all("O:/Nat_Sustain-proj/_user/HanneNicolaisen_au704629/Data/Habitat_Ref_Map/RF_predict_binary_") |>
+    stringr::str_remove_all("HabSut/RF_predict_binary_") |>
     stringr::str_remove_all("_thresh_5.tif")
   DF <- terra::rast(path) |>
     terra::as.data.frame(cells = T) |>
@@ -266,4 +269,29 @@ make_final_presences <- function(Long_LU_table, Long_Buffer, LookUpTable) {
 GetRichness <- function(df){
   Sum <- df[, .N, keyby = .(cell, Landuse)]
   return(Sum)
+}
+
+Join_Final_Presences <- function(List){
+  DT <- data.table::rbindlist(List, fill = T)
+}
+
+
+calc_pd <- function(Fin, Tree){
+  Fin <- as.data.table(Fin)
+  Leaves <- Tree$scenario.3$tip.label
+  Landuse <- unique(Fin$Landuse)
+  Fin[,Pres := 1]
+  Fin[, species := stringr::str_replace_all(species, " ", "_")]
+
+  Fin2 <- dcast(Fin, cell~species, value.var="Pres", fill = 0)
+  Index <- which(colnames(Fin2) %in% Leaves)
+  Mat <- as.matrix(Fin2)[,Index]
+
+  PD <- picante::pd(samp = Mat, Tree$scenario.3, include.root = F) |>
+    as.data.table()
+  PD[, PD := ifelse(is.na(PD), 0 , PD)]
+
+  PD$cell <- Fin2$cell
+  PD$Landuse <- Landuse
+  return(PD)
 }

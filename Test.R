@@ -45,15 +45,6 @@ FeasibleCells <- Long_Buffer[cell %chin% unique(Available_Cells$cell)]
 
 result <- FeasibleCells[Available_Cells, on = "cell", nomatch = 0]
 
-small_result <-
 
-
-# Perform the non-equi join on "Habitat" and "species" columns
-result2 <- result[Feasible_Landuses, on = .(Habitat, species), nomatch = 0]
-
-readr::write_csv(result, "result.csv")
-readr::write_csv(Feasible_Landuses, "Feasible_Landuses.csv")
-
-
-# Discard the "Habitat" column
+result2 <- result[Feasible_Landuses, on = .(Habitat, species), nomatch = 0, allow.cartesian = TRUE]
 result2[, Habitat := NULL]

@@ -6,14 +6,10 @@ library(tarchetypes)
 
 tar_option_set(packages = c("data.table", "dplyr", "ENMeval","janitor", "magrittr", "maxnet", "purrr", "readxl",
                             "SDMWorkflows", "stringr", "tidyr", "terra", "V.PhyloMaker"),
-               controller = crew_controller_local(workers = 50),
+               controller = crew_controller_local(workers = 60),
                error = "null")
 list(
-  tar_files(LanduseSuitability, c("O:/Nat_Sustain-proj/_user/HanneNicolaisen_au704629/Data/Habitat_Ref_Map/RF_predict_binary_DryPoor_thresh_5.tif",
-                                 "O:/Nat_Sustain-proj/_user/HanneNicolaisen_au704629/Data/Habitat_Ref_Map/RF_predict_binary_DryRich_thresh_5.tif",
-                                 "O:/Nat_Sustain-proj/_user/HanneNicolaisen_au704629/Data/Habitat_Ref_Map/RF_predict_binary_WetPoor_thresh_5.tif",
-                                 "O:/Nat_Sustain-proj/_user/HanneNicolaisen_au704629/Data/Habitat_Ref_Map/RF_predict_binary_WetRich_thresh_5.tif"
-  )),
+  tar_files(LanduseSuitability, list.files(path = "HabSut/", full.names = T)),
   tar_target(LandUseTiff,
              "Dir/LU.tif",
              format = "file"),
@@ -66,6 +62,9 @@ list(
   tar_target(Final_Presences, make_final_presences(Long_LU_table, Long_Buffer, LookUpTable),
              pattern = map(Long_Buffer),
              iteration = "group"),
+#  tarchetypes::tar_group_by(joint_final_presences, Join_Final_Presences(Final_Presences), Landuse),
+#  tarchetypes::tar_group_by(phylo_divers,
+#                            calc_pd(Final_Presences, Phylo_Tree), Landuse),
   tar_target(Richness, GetRichness(Final_Presences))
 )
 
