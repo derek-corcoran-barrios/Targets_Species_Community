@@ -39,7 +39,15 @@ Join_Presences <- function(List){
 }
 
 summarise_presences <- function(df){
-  Sum <- as.data.table(df)[, .N, keyby = .(family, genus, species)]
+  if(length(df) == 0){
+    Sum <- as.data.table(data.frame(family = "family_x",
+                     genus = "genus_x",
+                     species ="species_x",
+                     N = 0))
+  }else if(length(df) > 0){
+    Sum <- as.data.table(df)[, .N, keyby = .(family, genus, species)]
+  }
+
   return(Sum)
 }
 
@@ -49,7 +57,9 @@ Minimum_presences <- function(DT, n = 1){
 }
 
 Select_Prescences <- function(Presences, speciesList){
-  DT <- Presences[species %chin% speciesList]
+  DT <- as.data.table(Presences)
+  DT <-  DT[, .(scientificName, decimalLatitude, decimalLongitude, family, genus, species)]
+  DT <- DT[species %chin% speciesList]
   DT <- DT |>
     as.data.frame()# |>
     #dplyr::group_by(species)
