@@ -270,7 +270,11 @@ create_thresholds <- function(Model, reference, file){
 }
 
 Generate_Lookup <- function(Model, Thresholds) {
-  joined_data <- merge(as.data.table(Model), as.data.table(Thresholds), by = c("species"), all = TRUE)
+  Model <- as.data.table(Model)
+  Model <- Model[species != "Spp"]
+  Thresholds <- as.data.table(Thresholds)
+  Thresholds <- Thresholds[species != "Spp"]
+  joined_data <- merge(Model, as.data.table(Thresholds), by = c("species"), all = TRUE)
   joined_data[, Pres := ifelse(Pred > Thres_95, 1, 0)]
   joined_data <- joined_data[Pres > 0]  # Assign the filtered result to joined_data
   joined_data[, .(species, Landuse, Pres)]  # Return the selected columns
