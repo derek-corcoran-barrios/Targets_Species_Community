@@ -85,25 +85,37 @@ generate_tree <- function(DF){
 }
 
 make_buffer_rasterized <- function(DT, file){
-  Rast <- terra::rast(file)
-  Result <- DT |>
-    dplyr::select(decimalLatitude, decimalLongitude, family, genus, species) |>
-    dplyr::mutate(presence = 1)
+  if (nrow(DT) == 0) {
+    Temp <- data.frame(matrix(ncol = 2, nrow = 0))
+    colnames(Temp) <- c("cell", "spp")
+  } else {
+    Rast <- terra::rast(file)
+    Result <- DT |>
+      dplyr::select(decimalLatitude, decimalLongitude, family, genus, species) |>
+      dplyr::mutate(presence = 1)
 
-  Temp <- Result |> terra::vect(geom = c( "decimalLongitude", "decimalLatitude"), crs = "+proj=longlat +datum=WGS84") |>
-    terra::project(terra::crs(Rast)) |>
-    terra::buffer(500) |>
-    terra::rasterize(Rast, field = "presence") |>
-    terra::as.data.frame(cells = T) |>
-    magrittr::set_colnames(c("cell", stringr::str_replace_all(unique(Result$species), " ", "_")))
+    Temp <- Result |> terra::vect(geom = c( "decimalLongitude", "decimalLatitude"), crs = "+proj=longlat +datum=WGS84") |>
+      terra::project(terra::crs(Rast)) |>
+      terra::buffer(500) |>
+      terra::rasterize(Rast, field = "presence") |>
+      terra::as.data.frame(cells = T) |>
+      magrittr::set_colnames(c("cell", stringr::str_replace_all(unique(Result$species), " ", "_")))
+  }
   return(Temp)
 }
 
 
 make_long_buffer <- function(DT){
+  if (nrow(DT) == 0) {
+    DT <- data.frame(matrix(ncol = 2, nrow = 0))
+    colnames(DT) <- c("cell", "species")
+    as.data.table(DT)
+  } else {
   DT <- as.data.table(DT)
   Species <- stringr::str_replace_all(colnames(DT)[2], "_", " ")
-  DT[, .(cell, species = Species)]
+  DT <- DT[, .(cell, species = Species)]
+  }
+  return(DT)
 }
 
 Join_long_buffer <- function(List){
@@ -228,28 +240,31 @@ ModelAndPredictFunc <- function(DF, file) {
 }
 
 
-create_thresholds <- function(Model, reference){
+create_thresholds <- function(Model, reference, file){
+  if (nrow(reference) == 0) {
+    Thres <- data.frame(species = unique(Model$species),Thres_99 = 1, Thres_95 = 1, Thres_90 = 1)
+  } else {
   Thres <- data.frame(species = unique(Model$species),Thres_99 = NA, Thres_95 = NA, Thres_90 = NA)
-  Thres$Thres_99 <- reference |>
+  Pres <- SamplePresLanduse(DF = reference, file = file)
+  FixedDataset <- DuplicateBoth(DF = Pres)
+  Thres$Thres_99 <- FixedDataset |>
     dplyr::left_join(Model) |>
-    dplyr::filter(Pres == 1) |>
     slice_max(order_by = Pred,prop = 0.99, with_ties = F) |>
     pull(Pred) |>
     min()
 
-  Thres$Thres_95 <- reference |>
+  Thres$Thres_95 <- FixedDataset |>
     dplyr::left_join(Model) |>
-    dplyr::filter(Pres == 1) |>
     slice_max(order_by = Pred,prop = 0.95, with_ties = F) |>
     pull(Pred) |>
     min()
 
-  Thres$Thres_90 <- reference |>
+  Thres$Thres_90 <- FixedDataset |>
     dplyr::left_join(Model) |>
-    dplyr::filter(Pres == 1) |>
     slice_max(order_by = Pred,prop = 0.90, with_ties = F) |>
     pull(Pred) |>
     min()
+  }
 
   return(Thres)
 }
@@ -263,13 +278,9 @@ Generate_Lookup <- function(Model, Thresholds) {
 
 
 generate_landuse_table <- function(path){
-  Names <- path |>
-    stringr::str_remove_all("HabSut/RF_predict_binary_") |>
-    stringr::str_remove_all("_thresh_5.tif")
   DF <- terra::rast(path) |>
     terra::as.data.frame(cells = T) |>
-    dplyr::filter(layer == 1)
-  colnames(DF)[2] <- Names
+    dplyr::filter(DryPoor == 1 | DryRich == 1 | WetPoor == 1 | WetRich == 1)
   return(DF)
 }
 
@@ -279,7 +290,9 @@ Make_Long_LU_table <- function(DF){
                                    measure.vars  = c("DryPoor", "DryRich", "WetPoor", "WetRich"),
                                    variable.name = "Habitat",
                                    value.name    = "Suitability", na.rm = T)
+  DF <- DF[Suitability > 0]
   DF <- DF[, Suitability := NULL]
+  DF <- as.data.frame(DF)
   return(DF)
 }
 
