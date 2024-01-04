@@ -207,6 +207,25 @@ ModelSpecies <- function(DF){
   return(Preds)
 }
 
+ModelAndPredictFunc <- function(DF, file) {
+  if (nrow(DF) == 0) {
+    Predicted <- data.frame(
+      Pred = 0,
+      Landuse = c("ForestDryRich", "ForestDryPoor", "ForestWetRich", "OpenDryPoor",
+                  "ForestWetPoor", "OpenDryRich", "OpenWetPoor", "Exclude", "OpenWetRich"),
+      species = "Spp"
+    )
+  } else {
+    Pres <- SamplePresLanduse(DF = DF, file = file)
+    BG <- SampleBGLanduse(DF = DF, file = file)
+    Both <- dplyr::bind_rows(Pres, BG)
+    FixedDataset <- DuplicateBoth(DF = Both)
+
+    Predicted <- ModelSpecies(DF = FixedDataset)
+  }
+
+  return(Predicted)
+}
 
 
 create_thresholds <- function(Model, reference){
