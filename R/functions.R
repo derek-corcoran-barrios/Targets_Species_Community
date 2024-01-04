@@ -301,18 +301,24 @@ Make_Long_LU_table <- function(DF){
 }
 
 make_final_presences <- function(Long_LU_table, Long_Buffer, LookUpTable) {
+  if (nrow(Long_Buffer) == 0) {
+    result2 <- data.frame(matrix(ncol = 3, nrow = 0))
+    colnames(result2) <- c("cell", "species", "Landuse")
+    result2 <- as.data.table(result2)
+  } else {
 
   # Modify Long_LU_table
+  Long_LU_table <- as.data.table(Long_LU_table)
   Long_LU_table[, Habitat := as.character(Habitat)]
 
   # Check feasible habitats for the particular species
-  Feasible_Landuses <- LookUpTable[species %in% unique(Long_Buffer$species)]
+  Feasible_Landuses <- LookUpTable[species %chin% unique(Long_Buffer$species)]
 
   # Transform Landuse into habitat and remove the prefix
   Feasible_Landuses[, Habitat := stringr::str_remove_all(Landuse, "Forest")]
   Feasible_Landuses[, Habitat := stringr::str_remove_all(Habitat, "Open")]
   Feasible_Landuses[, Pres := NULL]
-
+  Feasible_Landuses <- Feasible_Landuses[Landuse != "Exclude"]
   # Get only the cells that can become the feasible Landuses
   Available_Cells <- Long_LU_table[Habitat %chin% unique(Feasible_Landuses$Habitat)]
 
@@ -323,6 +329,7 @@ make_final_presences <- function(Long_LU_table, Long_Buffer, LookUpTable) {
   result <- FeasibleCells[Available_Cells, on = "cell", nomatch = 0]
   result2 <- result[Feasible_Landuses, on = .(Habitat, species), nomatch = 0, allow.cartesian = TRUE]
   result2[, Habitat := NULL]
+  }
 
   # Return the final result
   return(result2)
