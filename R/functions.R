@@ -56,15 +56,25 @@ Minimum_presences <- function(DT, n = 1){
   return(DT)
 }
 
-Select_Prescences <- function(Presences, speciesList){
+Select_Prescences <- function(Presences, speciesList) {
   DT <- as.data.table(Presences)
-  DT <-  DT[, .(scientificName, decimalLatitude, decimalLongitude, family, genus, species)]
-  DT <- DT[species %chin% speciesList]
-  DT <- DT |>
-    as.data.frame()# |>
-    #dplyr::group_by(species)
+
+  # Check if DT is a data.frame and contains the required columns
+  if (is.data.frame(DT) &&
+      all(c("scientificName", "decimalLatitude", "decimalLongitude", "family", "genus", "species") %in% colnames(DT))) {
+    # If yes, filter the data.frame
+    DT <- DT[, .(scientificName, decimalLatitude, decimalLongitude, family, genus, species)][species %chin% speciesList]
+    DT <- DT |>
+      as.data.frame()
+  } else {
+    # If no, create an empty data.frame with the specified column names
+    DT <- data.frame(matrix(ncol = 6, nrow = 0))
+    colnames(DT) <- c("scientificName", "decimalLatitude", "decimalLongitude", "family", "genus", "species")
+  }
+
   return(DT)
 }
+
 
 generate_tree <- function(DF){
   Tree <- as.data.frame(DF) |>
@@ -118,20 +128,26 @@ SamplePresLanduse <- function(DF, file){
 }
 
 SampleBGLanduse <- function(DF, file){
-  Denmark_LU <- terra::rast(file)
+  if(nrow(DF) > 0){
+    Denmark_LU <- terra::rast(file)
 
-  Temp <- DF |>
-    dplyr::select(species, decimalLongitude, decimalLatitude) |>
-    terra::vect(geom=c("decimalLongitude", "decimalLatitude"), crs = "epsg:4326") |>
-    terra::project(terra::crs(Denmark_LU))
+    Temp <- DF |>
+      dplyr::select(species, decimalLongitude, decimalLatitude) |>
+      terra::vect(geom=c("decimalLongitude", "decimalLatitude"), crs = "epsg:4326") |>
+      terra::project(terra::crs(Denmark_LU))
 
-  BG <- Denmark_LU |>
-    terra::crop(Convex_20(as.data.frame(Temp, geom = "xy"), lon = "x", lat = "y",
-                          proj = terra::crs(Denmark_LU))) |>
-    terra::spatSample(10000, na.rm = T) |>
-    dplyr::mutate(Landuse = as.character(SN_ModelClass), Pres = 0) |>
-    dplyr::filter(!is.na(Landuse))
-  BG$species <- unique(Temp$species)
+    BG <- Denmark_LU |>
+      terra::crop(Convex_20(as.data.frame(Temp, geom = "xy"), lon = "x", lat = "y",
+                            proj = terra::crs(Denmark_LU))) |>
+      terra::spatSample(10000, na.rm = T) |>
+      dplyr::mutate(Landuse = as.character(SN_ModelClass), Pres = 0) |>
+      dplyr::filter(!is.na(Landuse))
+    BG$species <- unique(Temp$species)
+    BG
+  }
+  if(nrow(DF) == 0){
+    BG = NULL
+  }
   return(BG)
 }
 
