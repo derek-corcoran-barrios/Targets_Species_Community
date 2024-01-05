@@ -304,6 +304,9 @@ make_final_presences <- function(Long_LU_table, Long_Buffer, LookUpTable) {
   if (nrow(Long_Buffer) == 0) {
     result2 <- data.frame(matrix(ncol = 3, nrow = 0))
     colnames(result2) <- c("cell", "species", "Landuse")
+    result2 <- result2 |> dplyr::mutate(cell = as.integer(cell),
+                                        species = as.character(species),
+                                        Landuse = as.character(Landuse))
     result2 <- as.data.table(result2)
   } else {
 
