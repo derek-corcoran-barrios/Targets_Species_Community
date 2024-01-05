@@ -308,7 +308,7 @@ make_final_presences <- function(Long_LU_table, Long_Buffer, LookUpTable) {
                                         species = as.character(species),
                                         Landuse = as.character(Landuse))
     result2 <- as.data.table(result2)
-  } else {
+    } else {
 
   # Modify Long_LU_table
   Long_LU_table <- as.data.table(Long_LU_table)

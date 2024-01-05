@@ -51,9 +51,11 @@ list(
   tar_target(Final_Presences, make_final_presences(Long_LU_table, Long_Buffer, LookUpTable),
              pattern = map(Long_Buffer),
              iteration = "group"),
-#  tarchetypes::tar_group_by(joint_final_presences, Join_Final_Presences(Final_Presences), Landuse),
-#  tarchetypes::tar_group_by(phylo_divers,
-#                            calc_pd(Final_Presences, Phylo_Tree), Landuse),
+  tarchetypes::tar_group_by(joint_final_presences, as.data.frame(Final_Presences), Landuse),
+  tar_target(PhyloDiversity,
+             calc_pd(joint_final_presences, Phylo_Tree),
+             map(joint_final_presences),
+             iteration = "group"),
   tar_target(Richness, GetRichness(Final_Presences))
 )
 
