@@ -56,6 +56,10 @@ list(
              calc_pd(joint_final_presences, Phylo_Tree),
              map(joint_final_presences),
              iteration = "group"),
-  tar_target(Richness, GetRichness(Final_Presences))
+  tar_target(Richness, GetRichness(Final_Presences)),
+  tar_target(name = output_Richness,
+             command = export_richness_pd(Results = PhyloDiversity, path = Landuse),
+             map(PhyloDiversity),
+             format = "file")
 )
 

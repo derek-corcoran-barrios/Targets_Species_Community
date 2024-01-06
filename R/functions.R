@@ -18,7 +18,7 @@ filter_plants <- function(df){
     dplyr::filter(kingdom == "Plantae") |>
     dplyr::pull(species) |>
     unique() |>
-    head(100)
+    head(500)
   return(result)
 }
 
@@ -366,4 +366,18 @@ calc_pd <- function(Fin, Tree){
   PD$cell <- Fin2$cell
   PD$Landuse <- Landuse
   return(PD)
+}
+
+export_richness_pd <- function(Results, path){
+  Temp <- as.numeric(terra::rast(path))
+  Temp[!is.na(Temp)] <- 0
+  PD <- Temp
+  Richness <- Temp
+  values(PD)[Results$cell] <- Results$PD
+  values(Richness)[Results$cell] <- Results$SR
+  names(PD) <- paste("PD", unique(Results$Landuse), sep = "_")
+  names(Richness) <- paste("Richness", unique(Results$Landuse), sep = "_")
+  BDRUtils::write_cog(PD, paste0("Results/PD/PD_",unique(Results$Landuse), ".tif"))
+  BDRUtils::write_cog(Richness, paste0("Results/Richness/Richness_",unique(Results$Landuse), ".tif"))
+
 }
