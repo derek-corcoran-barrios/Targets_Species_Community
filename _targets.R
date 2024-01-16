@@ -5,7 +5,7 @@ library(crew)
 library(tarchetypes)
 
 tar_option_set(packages = c("data.table", "dplyr", "ENMeval","janitor", "magrittr", "maxnet", "purrr", "Rarity", "readxl",
-                            "SDMWorkflows", "stringr", "tidyr", "terra", "V.PhyloMaker", "BDRUtils"),
+                            "SDMWorkflows", "stringr", "tidyr", "tibble","terra", "V.PhyloMaker", "BDRUtils"),
                controller = crew_controller_local(workers = 60),
                error = "null") # Force skip non-debugging outdated targets)
 list(
@@ -62,6 +62,10 @@ list(
   tar_target(name = output_PD,
              command = export_pd(Results = PhyloDiversity, path = LandUseTiff),
              map(PhyloDiversity),
+             format = "file"),
+  tar_target(name = output_Rarity,
+             command = export_rarity(Results = rarity, path = LandUseTiff),
+             map(rarity),
              format = "file")
 )
 

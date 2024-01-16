@@ -390,5 +390,18 @@ calc_rarity <- function(Fin, RW){
   colnames(Fin2) <- stringr::str_replace_all(colnames(Fin2), "_", " ")
   Fin2 <- t(Fin2)
   Rarity <- Rarity::Irr(assemblages = Fin2, W = RW)
+  Rarity <- as.data.frame(Rarity)
+  Rarity$Landuse <- Landuse
+  Rarity <- tibble::rownames_to_column(Rarity,var = "cell")
   return(Rarity)
+}
+
+export_rarity <- function(Results, path){
+  Temp <- as.numeric(terra::rast(path))
+  Temp[!is.na(Temp)] <- 0
+  Rarity <- Temp
+  values(Rarity)[Results$cell] <- Results$Irr
+  names(Rarity) <- paste("Rarity", unique(Results$Landuse), sep = "_")
+  BDRUtils::write_cog(Rarity, paste0("Results/Rarity/Rarity_",unique(Results$Landuse), ".tif"))
+  paste0("Results/Rarity/Rarity_",unique(Results$Landuse), ".tif")
 }
