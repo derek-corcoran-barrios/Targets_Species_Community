@@ -400,7 +400,7 @@ export_rarity <- function(Results, path){
   Temp <- as.numeric(terra::rast(path))
   Temp[!is.na(Temp)] <- 0
   Rarity <- Temp
-  values(Rarity)[Results$cell] <- Results$Irr
+  values(Rarity)[as.numeric(Results$cell)] <- Results$Irr
   names(Rarity) <- paste("Rarity", unique(Results$Landuse), sep = "_")
   BDRUtils::write_cog(Rarity, paste0("Results/Rarity/Rarity_",unique(Results$Landuse), ".tif"))
   paste0("Results/Rarity/Rarity_",unique(Results$Landuse), ".tif")
