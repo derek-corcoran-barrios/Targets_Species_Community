@@ -11,6 +11,7 @@ knitr::opts_chunk$set(
 )
 library(targets)
 library(DiagrammeR)
+library(terra)
 ```
 
 # Targets_Species_Community
@@ -18,9 +19,38 @@ library(DiagrammeR)
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of Targets_Species_Community is to recreate the community generated but using the targets r package
+The goal of Targets_Species_Community is to recreate the community generated but using the targets r package, here you can see the whole workflow
 
 
 ```{r, echo = FALSE}
-DiagrammeR::mermaid(targets::tar_mermaid())
+targets::tar_visnetwork(targets_only = T)
+```
+
+
+# Results
+
+With 200 species the whole workflow finished without mistakes in 1.905 hours. Here are the results in tifs
+
+
+
+## Richness
+
+```{r richnessplot}
+tif_files_richness <- list.files("Results/Richness/", pattern = "\\.tif$", full.names = TRUE)
+plot(terra::rast(tif_files_richness), colNA = "black")
+```
+
+
+## Phylogenetic diversity
+
+```{r PDsplot}
+tif_files_PD <- list.files("Results/PD/", pattern = "\\.tif$", full.names = TRUE)
+plot(terra::rast(tif_files_PD), colNA = "black")
+```
+
+## Rarity
+
+```{r Raritysplot}
+tif_files_rarity <- list.files("Results/Rarity/", pattern = "\\.tif$", full.names = TRUE)
+plot(terra::rast(tif_files_rarity), colNA = "black")
 ```
