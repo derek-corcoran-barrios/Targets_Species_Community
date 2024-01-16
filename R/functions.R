@@ -16,63 +16,39 @@ clean_species <- function(df){
 filter_plants <- function(df){
   result <- df |>
     dplyr::filter(kingdom == "Plantae") |>
-    dplyr::pull(species) |>
-    unique() |>
-    head(500)
+    dplyr::select("family", "genus", "species") |>
+    distinct()
+  result <- result[1:100,]
   return(result)
 }
 
+count_presences <- function(species){
+  DF <- data.table(
+                  family = species$family,
+                  genus = species$genus,
+                  species = species$species,
+                   N = rgbif::occ_count(scientificName = species$species,
+                                        hasCoordinate = T,
+                                        country = "DK",
+                                        hasGeospatialIssue = FALSE,
+                                        year='1999,2023'))
+  return(DF)
+}
+
+filter_counts <- function(DT, n = 1){
+  DT <- DT[N >= n]
+  return(DT)
+}
+
 get_plant_presences <- function(species){
-  SDMWorkflows::GetOccs(Species = unique(species),
+ DF<- SDMWorkflows::GetOccs(Species = unique(species$species),
                         WriteFile = FALSE,
                         Log = FALSE,
                         country = "DK",
                         limit = 100000,
                         year='1999,2023')
-}
-
-
-Join_Presences <- function(List){
-  DT <- data.table::rbindlist(List, fill = T)
-  DT <-  DT[, .(scientificName, decimalLatitude, decimalLongitude, family, genus, species)]
-  return(DT)
-}
-
-summarise_presences <- function(df){
-  if(length(df) == 0){
-    Sum <- as.data.table(data.frame(family = "family_x",
-                     genus = "genus_x",
-                     species ="species_x",
-                     N = 0))
-  }else if(length(df) > 0){
-    Sum <- as.data.table(df)[, .N, keyby = .(family, genus, species)]
-  }
-
-  return(Sum)
-}
-
-Minimum_presences <- function(DT, n = 1){
-  DT <- DT[N >= n]
-  return(DT)
-}
-
-Select_Prescences <- function(Presences, speciesList) {
-  DT <- as.data.table(Presences)
-
-  # Check if DT is a data.frame and contains the required columns
-  if (is.data.frame(DT) &&
-      all(c("scientificName", "decimalLatitude", "decimalLongitude", "family", "genus", "species") %in% colnames(DT))) {
-    # If yes, filter the data.frame
-    DT <- DT[, .(scientificName, decimalLatitude, decimalLongitude, family, genus, species)][species %chin% speciesList]
-    DT <- DT |>
-      as.data.frame()
-  } else {
-    # If no, create an empty data.frame with the specified column names
-    DT <- data.frame(matrix(ncol = 6, nrow = 0))
-    colnames(DT) <- c("scientificName", "decimalLatitude", "decimalLongitude", "family", "genus", "species")
-  }
-
-  return(DT)
+    try(DF <- DF[[1]] |> dplyr::select(scientificName, decimalLatitude, decimalLongitude, family, genus, species))
+    return(DF)
 }
 
 
@@ -374,10 +350,10 @@ export_richness_pd <- function(Results, path){
   PD <- Temp
   Richness <- Temp
   values(PD)[Results$cell] <- Results$PD
-  values(Richness)[Results$cell] <- Results$SR
+  #values(Richness)[Results$cell] <- Results$SR
   names(PD) <- paste("PD", unique(Results$Landuse), sep = "_")
-  names(Richness) <- paste("Richness", unique(Results$Landuse), sep = "_")
+#  names(Richness) <- paste("Richness", unique(Results$Landuse), sep = "_")
   BDRUtils::write_cog(PD, paste0("Results/PD/PD_",unique(Results$Landuse), ".tif"))
-  BDRUtils::write_cog(Richness, paste0("Results/Richness/Richness_",unique(Results$Landuse), ".tif"))
-
+ # BDRUtils::write_cog(Richness, paste0("Results/Richness/Richness_",unique(Results$Landuse), ".tif"))
+  paste0("Results/PD/PD_",unique(Results$Landuse), ".tif")
 }
