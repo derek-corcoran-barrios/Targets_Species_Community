@@ -344,16 +344,51 @@ calc_pd <- function(Fin, Tree){
   return(PD)
 }
 
-export_richness_pd <- function(Results, path){
+export_pd <- function(Results, path){
   Temp <- as.numeric(terra::rast(path))
   Temp[!is.na(Temp)] <- 0
   PD <- Temp
   Richness <- Temp
   values(PD)[Results$cell] <- Results$PD
-  #values(Richness)[Results$cell] <- Results$SR
   names(PD) <- paste("PD", unique(Results$Landuse), sep = "_")
-#  names(Richness) <- paste("Richness", unique(Results$Landuse), sep = "_")
   BDRUtils::write_cog(PD, paste0("Results/PD/PD_",unique(Results$Landuse), ".tif"))
- # BDRUtils::write_cog(Richness, paste0("Results/Richness/Richness_",unique(Results$Landuse), ".tif"))
   paste0("Results/PD/PD_",unique(Results$Landuse), ".tif")
+}
+
+export_richness <- function(Results, path){
+  Temp <- as.numeric(terra::rast(path))
+  Temp[!is.na(Temp)] <- 0
+  Richness <- Temp
+  values(Richness)[Results$cell] <- Results$SR
+  names(Richness) <- paste("Richness", unique(Results$Landuse), sep = "_")
+  BDRUtils::write_cog(Richness, paste0("Results/Richness/Richness_",unique(Results$Landuse), ".tif"))
+  paste0("Results/Richness/Richness_",unique(Results$Landuse), ".tif")
+}
+
+
+calc_rarity_weight <- function(df){
+  JF <- as.data.table(df)
+
+
+  JF <- JF[, .N, by = species]
+
+  national.occ <- JF$N
+  names(national.occ) <- JF$species
+
+
+  rarity.weights <- rWeights(national.occ)
+  return(rarity.weights)
+}
+
+calc_rarity <- function(Fin, RW){
+  Fin <- as.data.table(Fin)
+  Landuse <- unique(Fin$Landuse)
+  Fin[,Pres := 1]
+  Fin[, species := stringr::str_replace_all(species, " ", "_")]
+  Fin2 <- dcast(Fin, cell~species, value.var="Pres", fill = 0)
+  Fin2 <- tibble::column_to_rownames(as.data.frame(Fin2), "cell")
+  colnames(Fin2) <- stringr::str_replace_all(colnames(Fin2), "_", " ")
+  Fin2 <- t(Fin2)
+  Rarity <- Rarity::Irr(assemblages = Fin2, W = RW)
+  return(Rarity)
 }

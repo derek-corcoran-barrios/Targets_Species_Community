@@ -4,7 +4,7 @@ source("R/functions.R")
 library(crew)
 library(tarchetypes)
 
-tar_option_set(packages = c("data.table", "dplyr", "ENMeval","janitor", "magrittr", "maxnet", "purrr", "readxl",
+tar_option_set(packages = c("data.table", "dplyr", "ENMeval","janitor", "magrittr", "maxnet", "purrr", "Rarity", "readxl",
                             "SDMWorkflows", "stringr", "tidyr", "terra", "V.PhyloMaker", "BDRUtils"),
                controller = crew_controller_local(workers = 60),
                error = "null") # Force skip non-debugging outdated targets)
@@ -46,13 +46,21 @@ list(
              pattern = map(Long_Buffer),
              iteration = "group"),
   tarchetypes::tar_group_by(joint_final_presences, as.data.frame(Final_Presences), Landuse),
+  tar_target(rarity_weight, calc_rarity_weight(joint_final_presences)),
+  tar_target(rarity, calc_rarity(joint_final_presences, rarity_weight),
+             map(joint_final_presences),
+             iteration = "group"),
   tar_target(PhyloDiversity,
              calc_pd(joint_final_presences, Phylo_Tree),
              map(joint_final_presences),
              iteration = "group"),
   tar_target(Richness, GetRichness(Final_Presences)),
   tar_target(name = output_Richness,
-             command = export_richness_pd(Results = PhyloDiversity, path = LandUseTiff),
+             command = export_richness(Results = PhyloDiversity, path = LandUseTiff),
+             map(PhyloDiversity),
+             format = "file"),
+  tar_target(name = output_PD,
+             command = export_pd(Results = PhyloDiversity, path = LandUseTiff),
              map(PhyloDiversity),
              format = "file")
 )
