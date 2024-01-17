@@ -29,7 +29,7 @@ targets::tar_visnetwork(targets_only = T)
 
 # Results
 
-With 200 species the whole workflow finished without mistakes in 1.905 hours. Here are the results in tifs
+With 300 species the whole workflow finished without mistakes in 1.905 hours. Here are the results in tifs
 
 
 
@@ -53,4 +53,11 @@ plot(terra::rast(tif_files_PD), colNA = "black")
 ```{r Raritysplot}
 tif_files_rarity <- list.files("Results/Rarity/", pattern = "\\.tif$", full.names = TRUE)
 plot(terra::rast(tif_files_rarity), colNA = "black")
+```
+
+
+test mermaid
+
+```{r, results = "asis", echo = FALSE}
+cat(c("```{mermaid}", targets::tar_mermaid(targets_only = T, legend = F), "```"), sep = "\n")
 ```
