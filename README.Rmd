@@ -7,6 +7,10 @@ output: github_document
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  message = F,
+  warning = F,
+  error = F,
+  echo = F,
   comment = "#>"
 )
 library(targets)
@@ -22,14 +26,9 @@ library(terra)
 The goal of Targets_Species_Community is to recreate the community generated but using the targets r package, here you can see the whole workflow
 
 
-```{r, echo = FALSE}
-targets::tar_visnetwork(targets_only = T)
-```
-
-
 # Results
 
-With 300 species the whole workflow finished without mistakes in 1.905 hours. Here are the results in tifs
+With 400 species the whole workflow finished without mistakes in 2.058 hours. Here are the results in tifs
 
 
 
@@ -61,3 +60,49 @@ test mermaid
 ```{r, results = "asis", echo = FALSE}
 cat(c("```{mermaid}", targets::tar_mermaid(targets_only = T, legend = F), "```"), sep = "\n")
 ```
+
+```{mermaid}
+graph LR
+  style Graph fill:#FFFFFF00,stroke:#000000;
+  subgraph Graph
+    direction LR
+    x9c6d1c6ff27855c7(["LanduseSuitability"]):::uptodate --> xd8b9f31c0822a52d(["LanduseTable"]):::uptodate
+    xf4b68b9a0db047f1["Long_Buffer"]:::uptodate --> xd88abd50d7d969a8["Final_Presences"]:::uptodate
+    x49cd1d3f69c871c0(["Long_LU_table"]):::uptodate --> xd88abd50d7d969a8["Final_Presences"]:::uptodate
+    xbe15f87624992817(["LookUpTable"]):::uptodate --> xd88abd50d7d969a8["Final_Presences"]:::uptodate
+    xfab3ac936a7a6fb3(["LandUseTiff"]):::uptodate --> x6e7e15abd6323cf0["output_Rarity"]:::uptodate
+    x7eea86b153654cc3["rarity"]:::uptodate --> x6e7e15abd6323cf0["output_Rarity"]:::uptodate
+    x03de5d46cb8263bd(["Filter_Counts"]):::uptodate --> x1234c39602c1f6ea["Presences"]:::uptodate
+    xfab3ac936a7a6fb3(["LandUseTiff"]):::uptodate --> xb20884a1d0267e2d["output_Richness"]:::uptodate
+    xc60fb40d268bec96["PhyloDiversity"]:::uptodate --> xb20884a1d0267e2d["output_Richness"]:::uptodate
+    xfab3ac936a7a6fb3(["LandUseTiff"]):::uptodate --> xc73d904d90e721c9["buffer_500"]:::uptodate
+    x1234c39602c1f6ea["Presences"]:::uptodate --> xc73d904d90e721c9["buffer_500"]:::uptodate
+    xfab3ac936a7a6fb3(["LandUseTiff"]):::uptodate --> x54460dbf2d0d1aab["ModelAndPredict"]:::uptodate
+    x1234c39602c1f6ea["Presences"]:::uptodate --> x54460dbf2d0d1aab["ModelAndPredict"]:::uptodate
+    xd88abd50d7d969a8["Final_Presences"]:::uptodate --> x1ab2da0dbce80c54(["joint_final_presences"]):::uptodate
+    xc73d904d90e721c9["buffer_500"]:::uptodate --> xf4b68b9a0db047f1["Long_Buffer"]:::uptodate
+    x54460dbf2d0d1aab["ModelAndPredict"]:::uptodate --> xbe15f87624992817(["LookUpTable"]):::uptodate
+    xa7956357d7f8182e["Thresholds"]:::uptodate --> xbe15f87624992817(["LookUpTable"]):::uptodate
+    x1ab2da0dbce80c54(["joint_final_presences"]):::uptodate --> x7eea86b153654cc3["rarity"]:::uptodate
+    x17bbde0022942793(["rarity_weight"]):::uptodate --> x7eea86b153654cc3["rarity"]:::uptodate
+    x7ced752a37ed4412(["Only_Plants"]):::uptodate --> x991d57889963b22e["Count_Presences"]:::uptodate
+    x76752fc0bd503faf(["Clean"]):::uptodate --> x7ced752a37ed4412(["Only_Plants"]):::uptodate
+    x1ab2da0dbce80c54(["joint_final_presences"]):::uptodate --> x17bbde0022942793(["rarity_weight"]):::uptodate
+    x03de5d46cb8263bd(["Filter_Counts"]):::uptodate --> x01fcaa42022f4a51(["Phylo_Tree"]):::uptodate
+    xfab3ac936a7a6fb3(["LandUseTiff"]):::uptodate --> x58fd9c294753b820["output_PD"]:::uptodate
+    xc60fb40d268bec96["PhyloDiversity"]:::uptodate --> x58fd9c294753b820["output_PD"]:::uptodate
+    xd8b9f31c0822a52d(["LanduseTable"]):::uptodate --> x49cd1d3f69c871c0(["Long_LU_table"]):::uptodate
+    x991d57889963b22e["Count_Presences"]:::uptodate --> x03de5d46cb8263bd(["Filter_Counts"]):::uptodate
+    x6d51284275156668(["file"]):::uptodate --> xb7119b48552d1da3(["data"]):::uptodate
+    xfab3ac936a7a6fb3(["LandUseTiff"]):::uptodate --> xa7956357d7f8182e["Thresholds"]:::uptodate
+    x54460dbf2d0d1aab["ModelAndPredict"]:::uptodate --> xa7956357d7f8182e["Thresholds"]:::uptodate
+    x1234c39602c1f6ea["Presences"]:::uptodate --> xa7956357d7f8182e["Thresholds"]:::uptodate
+    xd88abd50d7d969a8["Final_Presences"]:::uptodate --> x3295ae898e560fa5(["Richness"]):::uptodate
+    x1ab2da0dbce80c54(["joint_final_presences"]):::uptodate --> xc60fb40d268bec96["PhyloDiversity"]:::uptodate
+    x01fcaa42022f4a51(["Phylo_Tree"]):::uptodate --> xc60fb40d268bec96["PhyloDiversity"]:::uptodate
+    xb7119b48552d1da3(["data"]):::uptodate --> x76752fc0bd503faf(["Clean"]):::uptodate
+  end
+  classDef uptodate stroke:#000000,color:#ffffff,fill:#354823;
+  classDef none stroke:#000000,color:#000000,fill:#94a4ac;
+```
+
