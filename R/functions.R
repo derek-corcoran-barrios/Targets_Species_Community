@@ -18,7 +18,7 @@ filter_plants <- function(df){
     dplyr::filter(kingdom == "Plantae") |>
     dplyr::select("family", "genus", "species") |>
     distinct()
-  result <- result[1:400,]
+  result <- result[1:1000,]
   return(result)
 }
 
@@ -196,20 +196,24 @@ ModelSpecies <- function(DF){
 }
 
 ModelAndPredictFunc <- function(DF, file) {
-  if (nrow(DF) == 0) {
-    Predicted <- data.frame(
-      Pred = 0,
-      Landuse = c("ForestDryRich", "ForestDryPoor", "ForestWetRich", "OpenDryPoor",
-                  "ForestWetPoor", "OpenDryRich", "OpenWetPoor", "Exclude", "OpenWetRich"),
-      species = "Spp"
-    )
-  } else {
-    Pres <- SamplePresLanduse(DF = DF, file = file)
-    BG <- SampleBGLanduse(DF = DF, file = file)
-    Both <- dplyr::bind_rows(Pres, BG)
-    FixedDataset <- DuplicateBoth(DF = Both)
+  Predicted <- data.frame(
+    Pred = 0,
+    Landuse = c("ForestDryRich", "ForestDryPoor", "ForestWetRich", "OpenDryPoor",
+                "ForestWetPoor", "OpenDryRich", "OpenWetPoor", "Exclude", "OpenWetRich"),
+    species = "Spp"
+  )
 
-    Predicted <- ModelSpecies(DF = FixedDataset)
+  if (nrow(DF) > 0) {
+    tryCatch({
+      Pres <- SamplePresLanduse(DF = DF, file = file)
+      BG <- SampleBGLanduse(DF = DF, file = file)
+      Both <- dplyr::bind_rows(Pres, BG)
+      FixedDataset <- DuplicateBoth(DF = Both)
+      Predicted <- ModelSpecies(DF = FixedDataset)
+    }, error = function(e) {
+      # Handle the exception
+      cat("An error occurred:", conditionMessage(e), "\n")
+    })
   }
 
   return(Predicted)
