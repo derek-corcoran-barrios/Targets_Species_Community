@@ -380,7 +380,7 @@ calc_rarity_weight <- function(df){
   names(national.occ) <- JF$species
 
 
-  rarity.weights <- rWeights(national.occ)
+  rarity.weights <- rWeights(national.occ, rounding = F)
   return(rarity.weights)
 }
 
@@ -393,7 +393,7 @@ calc_rarity <- function(Fin, RW){
   Fin2 <- tibble::column_to_rownames(as.data.frame(Fin2), "cell")
   colnames(Fin2) <- stringr::str_replace_all(colnames(Fin2), "_", " ")
   Fin2 <- t(Fin2)
-  Rarity <- Rarity::Irr(assemblages = Fin2, W = RW)
+  Rarity <- Rarity::Isr(assemblages = Fin2, W = RW)
   Rarity <- as.data.frame(Rarity)
   Rarity$Landuse <- Landuse
   Rarity <- tibble::rownames_to_column(Rarity,var = "cell")
@@ -404,7 +404,7 @@ export_rarity <- function(Results, path){
   Temp <- as.numeric(terra::rast(path))
   Temp[!is.na(Temp)] <- 0
   Rarity <- Temp
-  values(Rarity)[as.numeric(Results$cell)] <- Results$Irr
+  values(Rarity)[as.numeric(Results$cell)] <- Results$IsrValue
   names(Rarity) <- paste("Rarity", unique(Results$Landuse), sep = "_")
   BDRUtils::write_cog(Rarity, paste0("Results/Rarity/Rarity_",unique(Results$Landuse), ".tif"))
   paste0("Results/Rarity/Rarity_",unique(Results$Landuse), ".tif")
