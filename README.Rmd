@@ -28,7 +28,7 @@ The goal of Targets_Species_Community is to recreate the community generated but
 
 # Results
 
-With 2000 species the whole workflow finished some mistakes in 3.078 hours. Here are the results in tifs
+With 2500 species the whole workflow finished some mistakes in 3.078 hours. Here are the results in tifs
 
 
 
