@@ -18,7 +18,7 @@ filter_plants <- function(df){
     dplyr::filter(kingdom == "Plantae") |>
     dplyr::select("family", "genus", "species") |>
     distinct()
-  result <- result[1:2700,]
+  result <- result[1:3000,]
   return(result)
 }
 
